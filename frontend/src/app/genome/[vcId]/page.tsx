@@ -1,10 +1,15 @@
+'use client'
+
+import { useEffect, useState } from 'react'
+import { useParams } from 'next/navigation'
 import Link from 'next/link'
-import { notFound } from 'next/navigation'
 import RadarChart from '@/components/genome/RadarChart'
 import HandsOnBadges from '@/components/genome/HandsOnBadges'
 import PhilosophyCards from '@/components/genome/PhilosophyCards'
 
-const DEMO_DATA: Record<string, unknown> = {
+// ─── デモデータ ──────────────────────────────────────────────────────────────
+
+const DEMO_DATA: Record<string, any> = {
   'demo-001': {
     basic_info: { name: '田中 健一', current_affiliation: 'グローバル・ベンチャーズ株式会社', ai_generated_alias: 'The Catalyst' },
     metadata: { data_freshness_level: 'A', source_count: 12 },
@@ -51,25 +56,84 @@ const DEMO_DATA: Record<string, unknown> = {
       ],
     },
   },
+  'demo-003': {
+    basic_info: { name: '佐藤 美咲', current_affiliation: 'フューチャーブリッジ・パートナーズ', ai_generated_alias: 'The Connector' },
+    metadata: { data_freshness_level: 'B+', source_count: 7 },
+    genome_stats: {
+      radar_chart: { leadership: 80, technology: 65, network: 92, execution: 75, vision: 85 },
+      core_philosophies: [
+        { title: 'コミュニティ重視', description: '起業家コミュニティへの貢献を優先', strength: 'high' },
+        { title: 'インパクト投資', description: '社会課題解決型スタートアップに注力', strength: 'medium' },
+      ],
+    },
+    investment_footprint: {
+      total_funded_startups: 18,
+      top_sectors: [{ sector: 'HRTech', percentage: 40 }, { sector: 'EdTech', percentage: 35 }, { sector: 'HealthTech', percentage: 25 }],
+      stage_distribution: { Seed: 70, PreA: 30 },
+    },
+    hands_on_dna: {
+      specific_supports: [
+        { type: 'PR・広報', description: 'メディア露出・プレスリリース支援', frequency: 'high' },
+        { type: 'パートナー開拓', description: '大企業との協業機会の創出', frequency: 'medium' },
+      ],
+    },
+  },
 }
 
-async function getGenomeData(vcId: string) {
-  if (DEMO_DATA[vcId]) return DEMO_DATA[vcId]
-  try {
-    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/genome/${vcId}`, {
-      cache: 'no-store'
-    })
-    if (!res.ok) return null
-    return res.json()
-  } catch {
-    return null
+// ─── Not Found ───────────────────────────────────────────────────────────────
+
+function NotFoundView() {
+  return (
+    <main className="min-h-screen bg-genome-dark flex items-center justify-center px-6">
+      <div className="text-center">
+        <p className="text-[80px] font-black text-genome-border/30 font-mono leading-none mb-4">404</p>
+        <div className="text-5xl mb-4">🧬</div>
+        <h1 className="text-2xl font-bold mb-2">ゲノムが見つかりません</h1>
+        <p className="text-genome-muted text-sm mb-6">このURLのプロフィールは存在しないか、まだ解析中です。</p>
+        <Link href="/genome/list" className="bg-genome-accent hover:bg-genome-accent-hover text-white px-6 py-3 rounded-xl transition-colors inline-block">
+          ゲノム一覧へ
+        </Link>
+      </div>
+    </main>
+  )
+}
+
+// ─── Profile Page ─────────────────────────────────────────────────────────────
+
+export default function GenomeProfilePage() {
+  const params = useParams()
+  const vcId = params.vcId as string
+  const [genome, setGenome] = useState<any>(null)
+  const [loading, setLoading] = useState(true)
+  const [notFound, setNotFound] = useState(false)
+
+  useEffect(() => {
+    if (!vcId) return
+    if (DEMO_DATA[vcId]) {
+      setGenome(DEMO_DATA[vcId])
+      setLoading(false)
+      return
+    }
+    fetch(`/api/genome/${vcId}`)
+      .then(r => {
+        if (!r.ok) { setNotFound(true); setLoading(false); return null }
+        return r.json()
+      })
+      .then(data => {
+        if (data) { setGenome(data); setLoading(false) }
+      })
+      .catch(() => { setNotFound(true); setLoading(false) })
+  }, [vcId])
+
+  if (loading) {
+    return (
+      <main className="min-h-screen bg-genome-dark flex items-center justify-center">
+        <div className="text-genome-muted">読み込み中...</div>
+      </main>
+    )
   }
-}
 
-export default async function GenomeProfilePage({ params }: { params: Promise<{ vcId: string }> }) {
-  const { vcId } = await params
-  const genome = await getGenomeData(vcId)
-  if (!genome) notFound()
+  if (notFound || !genome) return <NotFoundView />
 
   return (
     <main className="min-h-screen bg-genome-dark">
