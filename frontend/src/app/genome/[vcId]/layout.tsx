@@ -1,7 +1,10 @@
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
+import { Suspense } from 'react'
 import { GenomeHeader } from '@/components/genome/GenomeHeader'
 import { GenomeTabNav } from '@/components/genome/GenomeTabNav'
+import { ErrorBoundary } from '@/components/ui/ErrorBoundary'
+import { ShareButton } from '@/components/ui/ShareButton'
 
 async function getGenomeBasic(vcId: string) {
   try {
@@ -15,6 +18,20 @@ async function getGenomeBasic(vcId: string) {
     return null
   }
 }
+
+// ─── タブコンテンツのスケルトン ────────────────────────────────────────────────
+
+function TabSkeleton() {
+  return (
+    <div className="space-y-4 animate-pulse">
+      <div className="h-40 bg-genome-card rounded-2xl" />
+      <div className="h-32 bg-genome-card rounded-2xl" />
+      <div className="h-24 bg-genome-card rounded-2xl" />
+    </div>
+  )
+}
+
+// ─── Layout ───────────────────────────────────────────────────────────────────
 
 export default async function GenomeLayout({
   children,
@@ -45,6 +62,8 @@ export default async function GenomeLayout({
             <span className="font-bold">VC Genome</span>
           </Link>
           <div className="flex items-center gap-3">
+            {/* シェアボタン（Client Component） */}
+            <ShareButton vcId={vcId} name={name} />
             <Link
               href={`/genome/${vcId}/calibrate`}
               className="text-sm text-genome-muted hover:text-genome-text transition-colors"
@@ -56,7 +75,7 @@ export default async function GenomeLayout({
       </nav>
 
       <div className="pt-16">
-        {/* ─── Profile Header (Client Component — animations) ─── */}
+        {/* ─── Profile Header ─── */}
         <div className="border-b border-genome-border bg-genome-card/60">
           <GenomeHeader
             vcId={vcId}
@@ -67,15 +86,19 @@ export default async function GenomeLayout({
             sources={sources}
           />
 
-          {/* ─── Tab Nav (Client Component — layoutId indicator) ─── */}
+          {/* ─── Tab Nav ─── */}
           <div className="max-w-5xl mx-auto px-6">
             <GenomeTabNav vcId={vcId} />
           </div>
         </div>
 
-        {/* ─── Page Content ─── */}
+        {/* ─── Page Content (ErrorBoundary + Suspense) ─── */}
         <div className="max-w-5xl mx-auto px-6 py-8">
-          {children}
+          <ErrorBoundary>
+            <Suspense fallback={<TabSkeleton />}>
+              {children}
+            </Suspense>
+          </ErrorBoundary>
         </div>
       </div>
     </main>
