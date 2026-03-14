@@ -6,6 +6,17 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { useGenomeStore, type RecentVC } from '@/store/useGenomeStore'
 import type { GenomeSummary, ConfidenceLevel } from '@/types/genome'
 
+// ─── デモデータ（バックエンド未接続時のフォールバック）────────────────────────────
+
+const DEMO_GENOMES: GenomeSummary[] = [
+  { id: 'demo-001', name: '田中 健一', affiliation: 'グローバル・ベンチャーズ株式会社', ai_generated_alias: 'The Catalyst', confidence: 'A', created_at: '2026-03-10T00:00:00Z' },
+  { id: 'demo-002', name: '山本 浩二', affiliation: 'スカイライン・キャピタル', ai_generated_alias: 'The Architect', confidence: 'A-', created_at: '2026-03-08T00:00:00Z' },
+  { id: 'demo-003', name: '佐藤 美咲', affiliation: 'フューチャーブリッジ・パートナーズ', ai_generated_alias: 'The Connector', confidence: 'B+', created_at: '2026-03-05T00:00:00Z' },
+  { id: 'demo-004', name: '鈴木 大輔', affiliation: 'ネクストステージ・ファンド', ai_generated_alias: 'The Operator', confidence: 'B', created_at: '2026-02-28T00:00:00Z' },
+  { id: 'demo-005', name: '伊藤 裕子', affiliation: 'イノベーション・ラボ・VC', ai_generated_alias: 'The Visionary', confidence: 'B+', created_at: '2026-02-20T00:00:00Z' },
+  { id: 'demo-006', name: '渡辺 剛', affiliation: 'パシフィック・グロース・ファンド', ai_generated_alias: 'The Strategist', confidence: 'C', created_at: '2026-02-15T00:00:00Z' },
+]
+
 // ─── 定数 ─────────────────────────────────────────────────────────────────────
 
 const CONFIDENCE_RANK: Record<string, number> = {
@@ -136,7 +147,7 @@ export default function GenomeListPage() {
   useEffect(() => {
     fetch('/api/genome/list')
       .then(r => r.json())
-      .then((data: GenomeSummary[]) => { setGenomes(data); setLoading(false) })
+      .then((data: GenomeSummary[]) => { setGenomes(data.length > 0 ? data : DEMO_GENOMES); setLoading(false) })
       .catch(() => setLoading(false))
   }, [])
 
