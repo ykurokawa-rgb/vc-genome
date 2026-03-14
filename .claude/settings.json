@@ -6,7 +6,12 @@
       "Bash(git commit -m \"fix: use --legacy-peer-deps for storybook peer dep conflict\")",
       "Bash(npm install next@latest --legacy-peer-deps)",
       "Bash(node -e \"const p=require\\(''./package.json''\\); console.log\\(''next:'', p.dependencies.next\\)\")",
-      "Bash(node -e \"console.log\\(require\\(''./node_modules/next/package.json''\\).version\\)\")"
+      "Bash(node -e \"console.log\\(require\\(''./node_modules/next/package.json''\\).version\\)\")",
+      "Bash(git add frontend/src/app/genome/list/page.tsx)",
+      "Bash(git commit -m \"demo: add fallback mock data for VC genome list when backend unavailable\")",
+      "Bash(cat /c/Users/yk000/StartPass-project1/frontend/src/app/genome/[vcId]/page.tsx)",
+      "Bash(git add frontend/src/app/genome/[vcId]/page.tsx)",
+      "Bash(git commit -m \"demo: add mock data for VC detail pages \\(demo-001, demo-002\\)\")"
     ]
   }
 }
