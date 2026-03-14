@@ -2,6 +2,7 @@ import type { Metadata } from 'next'
 import './globals.css'
 import BetaBanner from '@/components/ui/BetaBanner'
 import OnboardingModal from '@/components/onboarding/OnboardingModal'
+import { ClientProviders } from '@/components/providers/ClientProviders'
 
 export const metadata: Metadata = {
   title: 'VC Genome | 投資DNAを可視化する',
@@ -17,9 +18,11 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="ja">
       <body className="bg-genome-dark text-genome-text antialiased">
-        <OnboardingModal />
-        {children}
-        <BetaBanner />
+        <ClientProviders>
+          <OnboardingModal />
+          {children}
+          <BetaBanner />
+        </ClientProviders>
       </body>
     </html>
   )
