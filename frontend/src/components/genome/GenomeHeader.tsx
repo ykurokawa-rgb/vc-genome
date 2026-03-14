@@ -25,11 +25,9 @@ function GeometricAvatar({ vcId, name }: { vcId: string; name: string }) {
   const hue3   = (hue + 251) % 360
 
   // 3 shapes derived from seed
-  const shapes = [
-    { type: 'circle',  cx: 20 + (seed % 24),  cy: 20 + ((seed >> 4) % 24), r: 10 + (seed % 8)  },
-    { type: 'rect',    x: 30 + (seed % 16),   y: 30 + ((seed >> 8) % 16), w: 14 + (seed % 10), h: 14 + ((seed >> 2) % 10) },
-    { type: 'polygon', points: `${50 + (seed % 16)},${10 + (seed % 12)} ${70 + (seed % 10)},${40 + (seed % 16)} ${30 + (seed % 12)},${45 + (seed % 10)}` },
-  ]
+  const circle  = { cx: 20 + (seed % 24),  cy: 20 + ((seed >> 4) % 24), r: 10 + (seed % 8)  }
+  const rect    = { x: 30 + (seed % 16),   y: 30 + ((seed >> 8) % 16), w: 14 + (seed % 10), h: 14 + ((seed >> 2) % 10) }
+  const polygon = { points: `${50 + (seed % 16)},${10 + (seed % 12)} ${70 + (seed % 10)},${40 + (seed % 16)} ${30 + (seed % 12)},${45 + (seed % 10)}` }
 
   const color1 = `hsl(${hue},  70%, 60%)`
   const color2 = `hsl(${hue2}, 65%, 58%)`
@@ -64,20 +62,20 @@ function GeometricAvatar({ vcId, name }: { vcId: string; name: string }) {
           <rect width="80" height="80" fill={`url(#bg-${vcId})`} />
 
           {/* Shape 1: circle */}
-          <circle cx={shapes[0].cx} cy={shapes[0].cy} r={shapes[0].r} fill={color1} opacity="0.6" />
+          <circle cx={circle.cx} cy={circle.cy} r={circle.r} fill={color1} opacity="0.6" />
 
           {/* Shape 2: rect */}
           <rect
-            x={shapes[1].x} y={shapes[1].y}
-            width={shapes[1].w} height={shapes[1].h}
+            x={rect.x} y={rect.y}
+            width={rect.w} height={rect.h}
             rx="3"
             fill={color2}
             opacity="0.5"
-            transform={`rotate(${(seed % 45) - 22}, ${shapes[1].x + shapes[1].w / 2}, ${shapes[1].y + shapes[1].h / 2})`}
+            transform={`rotate(${(seed % 45) - 22}, ${rect.x + rect.w / 2}, ${rect.y + rect.h / 2})`}
           />
 
           {/* Shape 3: triangle */}
-          <polygon points={shapes[2].points} fill={color3} opacity="0.55" />
+          <polygon points={polygon.points} fill={color3} opacity="0.55" />
 
           {/* Initials overlay */}
           <text
