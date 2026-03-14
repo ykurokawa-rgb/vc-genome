@@ -11,7 +11,10 @@
       "Bash(git commit -m \"demo: add fallback mock data for VC genome list when backend unavailable\")",
       "Bash(cat /c/Users/yk000/StartPass-project1/frontend/src/app/genome/[vcId]/page.tsx)",
       "Bash(git add frontend/src/app/genome/[vcId]/page.tsx)",
-      "Bash(git commit -m \"demo: add mock data for VC detail pages \\(demo-001, demo-002\\)\")"
+      "Bash(git commit -m \"demo: add mock data for VC detail pages \\(demo-001, demo-002\\)\")",
+      "Bash(head -30 /c/Users/yk000/StartPass-project1/frontend/src/app/genome/[vcId]/page.tsx)",
+      "Bash(git add frontend/src/app/genome/[vcId]/page.tsx frontend/src/app/api/genome/[vcId]/route.ts)",
+      "Bash(git commit -m \"fix: convert genome detail to client component with embedded demo data\")"
     ]
   }
 }
