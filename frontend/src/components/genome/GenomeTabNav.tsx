@@ -4,13 +4,14 @@ import { usePathname } from 'next/navigation'
 import Link from 'next/link'
 import { motion } from 'framer-motion'
 
-const TABS = [
+const TABS: { label: string; href: string; badge?: boolean }[] = [
   { label: '概要',        href: '' },
   { label: '根拠データ',  href: '/evidence' },
   { label: '投資年表',    href: '/timeline' },
   { label: 'ネットワーク', href: '/network' },
   { label: '評判',        href: '/reputation' },
   { label: 'カレンダー',  href: '/calendar' },
+  { label: 'AIチャット',  href: '/shadow-chat', badge: true },
 ]
 
 interface GenomeTabNavProps {
@@ -47,7 +48,14 @@ export function GenomeTabNav({ vcId }: GenomeTabNavProps) {
             />
 
             {/* Label */}
-            <span className="relative">{tab.label}</span>
+            <span className="relative flex items-center gap-1.5">
+              {tab.label}
+              {tab.badge && (
+                <span className="text-[9px] bg-genome-accent text-white px-1.5 py-0.5 rounded-full font-bold leading-none">
+                  AI
+                </span>
+              )}
+            </span>
 
             {/* Active indicator — slides between tabs */}
             {isActive && (

@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react'
 import Link from 'next/link'
+import { motion, AnimatePresence } from 'framer-motion'
 
 type Step = 'input' | 'scanning' | 'result'
 
@@ -67,16 +68,24 @@ const SCAN_LOGS = [
   '解析完了。結果を準備しています...',
 ]
 
-function ScoreBar({ score }: { score: number }) {
-  const filled = Math.round(score / 10)
-  const empty = 10 - filled
+function ScoreBar({ score, delay = 0 }: { score: number; delay?: number }) {
+  const color = score >= 80 ? '#00D48A' : score >= 60 ? '#F0C040' : '#6C63FF'
   return (
-    <span className="font-mono text-genome-green text-sm">
-      {'█'.repeat(filled)}
-      <span className="text-genome-border">{'░'.repeat(empty)}</span>
-      {' '}
-      <span className="text-genome-text font-bold">{score}%</span>
-    </span>
+    <div className="space-y-1.5">
+      <div className="flex items-center justify-between">
+        <span className="font-mono text-sm font-bold" style={{ color }}>{score}%</span>
+        <span className="text-xs text-genome-muted">マッチスコア</span>
+      </div>
+      <div className="h-2.5 bg-genome-border rounded-full overflow-hidden">
+        <motion.div
+          className="h-full rounded-full"
+          style={{ background: `linear-gradient(90deg, ${color}, ${color}99)` }}
+          initial={{ width: 0 }}
+          animate={{ width: `${score}%` }}
+          transition={{ duration: 1.1, delay, ease: [0, 0, 0.2, 1] }}
+        />
+      </div>
+    </div>
   )
 }
 
@@ -434,24 +443,44 @@ export default function SimulatorPage() {
           {/* ───── STEP 3: RESULTS ───── */}
           {step === 'result' && (
             <div className="space-y-6">
-              <div className="text-center mb-6">
+              {/* ヘッダー */}
+              <motion.div
+                initial={{ opacity: 0, y: -8 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="text-center mb-6"
+              >
+                <motion.div
+                  initial={{ scale: 0 }}
+                  animate={{ scale: 1 }}
+                  transition={{ type: 'spring', stiffness: 260, damping: 20 }}
+                  className="text-5xl mb-3"
+                >
+                  🎯
+                </motion.div>
                 <h1 className="text-2xl font-bold mb-1">相性診断 完了</h1>
                 <p className="text-genome-muted text-sm">
                   AIが {results.length} 名のVCとの相性を算出しました
                 </p>
-              </div>
+              </motion.div>
 
+              {/* 結果カード（スタガーアニメーション） */}
               {results.map((vc, rank) => (
-                <div
+                <motion.div
                   key={vc.vc_id}
-                  className={`glass rounded-2xl p-6 space-y-4 transition-all ${
-                    rank === 0 ? 'border-genome-gold/40 glow-gold' : 'hover:border-genome-accent/30'
+                  initial={{ opacity: 0, y: 20, scale: 0.97 }}
+                  animate={{ opacity: 1, y: 0, scale: 1 }}
+                  transition={{ delay: rank * 0.12, type: 'spring', stiffness: 260, damping: 24 }}
+                  className={`glass rounded-2xl p-6 space-y-4 ${
+                    rank === 0 ? 'border-genome-gold/40 glow-gold' : 'hover:border-genome-accent/30 transition-colors'
                   }`}
                 >
-                  {/* Rank badge + header */}
+                  {/* ランク + ヘッダー */}
                   <div className="flex items-start gap-4">
-                    <div
-                      className={`w-10 h-10 rounded-xl flex items-center justify-center font-bold text-lg shrink-0 ${
+                    <motion.div
+                      initial={{ scale: 0, rotate: -10 }}
+                      animate={{ scale: 1, rotate: 0 }}
+                      transition={{ delay: rank * 0.12 + 0.15, type: 'spring', stiffness: 300 }}
+                      className={`w-11 h-11 rounded-xl flex items-center justify-center font-bold text-lg shrink-0 ${
                         rank === 0
                           ? 'bg-genome-gold/20 text-genome-gold border border-genome-gold/40'
                           : rank === 1
@@ -459,16 +488,21 @@ export default function SimulatorPage() {
                           : 'bg-genome-card text-genome-muted border border-genome-border'
                       }`}
                     >
-                      {rank + 1}
-                    </div>
+                      {rank === 0 ? '👑' : rank + 1}
+                    </motion.div>
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 flex-wrap">
                         <span className="font-bold text-lg">{vc.vc_name}</span>
                         <span className="text-genome-muted text-sm">{vc.vc_affiliation}</span>
                         {rank === 0 && (
-                          <span className="text-xs bg-genome-gold/20 text-genome-gold border border-genome-gold/40 px-2 py-0.5 rounded-full">
+                          <motion.span
+                            initial={{ opacity: 0, scale: 0.8 }}
+                            animate={{ opacity: 1, scale: 1 }}
+                            transition={{ delay: 0.3 }}
+                            className="text-xs bg-genome-gold/20 text-genome-gold border border-genome-gold/40 px-2 py-0.5 rounded-full"
+                          >
                             ベストマッチ
-                          </span>
+                          </motion.span>
                         )}
                       </div>
                       <div className="text-genome-gold text-sm font-mono mt-0.5">
@@ -477,48 +511,57 @@ export default function SimulatorPage() {
                     </div>
                   </div>
 
-                  {/* Match score bar */}
-                  <div>
-                    <div className="flex items-center justify-between mb-1.5">
-                      <span className="text-xs text-genome-muted">マッチスコア</span>
-                    </div>
-                    <ScoreBar score={vc.match_score} />
-                  </div>
+                  {/* マッチスコアバー */}
+                  <ScoreBar score={vc.match_score} delay={rank * 0.12 + 0.2} />
 
-                  {/* Summary */}
-                  <div className="bg-genome-card/60 rounded-xl px-4 py-3">
+                  {/* マッチ理由（ミニバー付き） */}
+                  {vc.match_reasons.length > 0 && (
+                    <div className="grid grid-cols-2 gap-2">
+                      {vc.match_reasons.slice(0, 4).map((r, i) => {
+                        const color = r.score >= 80 ? '#00D48A' : r.score >= 60 ? '#F0C040' : '#6B6B80'
+                        return (
+                          <motion.div
+                            key={i}
+                            initial={{ opacity: 0, y: 6 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ delay: rank * 0.12 + 0.25 + i * 0.05 }}
+                            className="bg-genome-card/50 rounded-lg px-3 py-2.5 space-y-1.5"
+                          >
+                            <div className="flex items-center justify-between gap-2">
+                              <span className="text-xs text-genome-muted truncate">{r.category}</span>
+                              <span className="text-xs font-mono font-bold shrink-0" style={{ color }}>
+                                {r.score}
+                              </span>
+                            </div>
+                            <div className="h-1 bg-genome-border rounded-full overflow-hidden">
+                              <motion.div
+                                className="h-full rounded-full"
+                                style={{ backgroundColor: color }}
+                                initial={{ width: 0 }}
+                                animate={{ width: `${r.score}%` }}
+                                transition={{ duration: 0.8, delay: rank * 0.12 + 0.35 + i * 0.05 }}
+                              />
+                            </div>
+                          </motion.div>
+                        )
+                      })}
+                    </div>
+                  )}
+
+                  {/* サマリー */}
+                  <motion.div
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    transition={{ delay: rank * 0.12 + 0.3 }}
+                    className="bg-genome-card/60 rounded-xl px-4 py-3"
+                  >
                     <p className="text-sm text-genome-text leading-relaxed">
                       <span className="text-genome-accent font-medium">なぜ相性が良いのか：</span>{' '}
                       {vc.summary}
                     </p>
-                  </div>
+                  </motion.div>
 
-                  {/* Match reasons */}
-                  {vc.match_reasons.length > 0 && (
-                    <div className="grid grid-cols-2 gap-2">
-                      {vc.match_reasons.slice(0, 4).map((r, i) => (
-                        <div
-                          key={i}
-                          className="bg-genome-card/40 rounded-lg px-3 py-2 flex items-center justify-between gap-2"
-                        >
-                          <span className="text-xs text-genome-muted truncate">{r.category}</span>
-                          <span
-                            className={`text-xs font-mono font-bold shrink-0 ${
-                              r.score >= 80
-                                ? 'text-genome-green'
-                                : r.score >= 60
-                                ? 'text-genome-gold'
-                                : 'text-genome-muted'
-                            }`}
-                          >
-                            {r.score}
-                          </span>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-
-                  {/* Caution */}
+                  {/* 注意 */}
                   {vc.caution && (
                     <div className="flex items-start gap-2 text-xs text-genome-gold bg-genome-gold/5 border border-genome-gold/20 rounded-lg px-3 py-2">
                       <span className="shrink-0">⚠</span>
@@ -526,22 +569,28 @@ export default function SimulatorPage() {
                     </div>
                   )}
 
-                  {/* Actions */}
+                  {/* アクション */}
                   <div className="flex gap-3 pt-1">
                     <Link
                       href={`/genome/${vc.vc_id}`}
-                      className="flex-1 text-center py-2 text-sm border border-genome-accent text-genome-accent rounded-xl hover:bg-genome-accent/10 transition-colors"
+                      className="flex-1 text-center py-2.5 text-sm border border-genome-accent text-genome-accent rounded-xl hover:bg-genome-accent/10 transition-colors"
                     >
                       ゲノムを見る
                     </Link>
-                    <button className="flex-1 py-2 text-sm bg-genome-accent hover:bg-genome-accent-hover text-white rounded-xl transition-colors">
-                      コンタクト申請
-                    </button>
+                    <Link
+                      href={`/genome/${vc.vc_id}/shadow-chat`}
+                      className="flex-1 text-center py-2.5 text-sm bg-genome-accent hover:bg-genome-accent-hover text-white rounded-xl transition-colors"
+                    >
+                      AIチャットで質問する
+                    </Link>
                   </div>
-                </div>
+                </motion.div>
               ))}
 
-              <button
+              <motion.button
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: results.length * 0.12 + 0.2 }}
                 onClick={() => {
                   setStep('input')
                   setResults([])
@@ -552,7 +601,7 @@ export default function SimulatorPage() {
                 className="w-full py-3 border border-genome-border text-genome-muted hover:text-genome-text hover:border-genome-accent/40 rounded-2xl text-sm transition-colors"
               >
                 もう一度診断する
-              </button>
+              </motion.button>
             </div>
           )}
         </div>
